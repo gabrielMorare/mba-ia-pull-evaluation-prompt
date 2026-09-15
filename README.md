@@ -466,21 +466,83 @@ sintoma. Resultado: média 0.9129 → **0.9209**, com Clarity, Precision e Helpf
 
 ### Evidências no LangSmith
 
-- **Prompt público (evolução completa em commits):**
+#### Links e acessos
+
+- 🌐 **Prompt otimizado — público, acessível sem login:**
   https://smith.langchain.com/prompts/gabrielmorare/bug_to_user_story_v2
   - `0b081f1b` — iteração 3 (versão final entregue)
   - `c5b8d743` — iteração 2
   - `7783acb3` — iteração 1
-- **Projeto com os traces das execuções:**
+- 🔒 **Dashboard do projeto (traces das execuções)** — requer autenticação na conta:
   https://smith.langchain.com/projects/mba-evaluation-prompt
-  (mais de 180 traces das 3 rodadas — cada exemplo gera o trace da geração da User Story e
-  dos 3 juízes)
-- **Dataset de avaliação (15 exemplos):** `mba-evaluation-prompt-eval`, em
-  *Datasets & Experiments* no LangSmith.
+- 🔒 **Dataset de avaliação** — requer autenticação na conta: `mba-evaluation-prompt-eval`,
+  em *Datasets & Experiments*
 
-> Os outputs brutos das três execuções estão versionados em `docs/evidencias/`, de forma que
-> a jornada permanece auditável mesmo após os traces expirarem (o free tier do LangSmith
-> retém traces por 14 dias; prompts e datasets persistem).
+---
+
+#### 1. Dataset de avaliação com 15 exemplos
+
+Dataset `mba-evaluation-prompt-eval`, com os 15 relatos de bug e suas referências
+(5 simples, 7 médios, 3 complexos) — "15 examples in total" no rodapé:
+
+![Dataset mba-evaluation-prompt-eval em Datasets & Experiments, com os 15 exemplos de bug e suas referencias](docs/evidencias/img/dataset.png)
+
+---
+
+#### 2. Execuções do prompt v2 com notas ≥ 0.8
+
+Saída do `evaluate.py` avaliando o prompt final (commit `0b081f1b`) contra os 15 exemplos do
+dataset — todas as 5 métricas acima do mínimo de 0.8:
+
+![Saida do terminal do evaluate.py avaliando o prompt final, com as cinco metricas acima de 0.8, media geral 0.9217 e status APROVADO](docs/evidencias/img/avaliacao-aprovada.png)
+
+> **Sobre os números deste print:** ele é da **execução de revalidação** — uma quarta
+> rodada, feita depois da iteração 3, para confirmar que o resultado é estável. Por isso a
+> média aqui (0.9217) difere em 0.0008 da que consta na tabela de iterações acima (0.9209,
+> da iteração 3 propriamente dita): Helpfulness 0.96 → 0.95 e Clarity 0.95 → 0.94, enquanto
+> F1-Score (0.84), Correctness (0.90) e Precision (0.96) se repetiram exatamente. Diferenças
+> dessa ordem são o ruído esperado de um avaliador LLM-as-judge. O que importa é o conjunto:
+> **três aprovações consecutivas** do mesmo prompt (iterações 2, 3 e esta revalidação), com
+> todas as métricas ≥ 0.8 nas três — evidência de estabilidade, não de uma rodada favorável.
+
+O output bruto completo de cada execução está versionado em
+[`docs/evidencias/`](docs/evidencias/) — [iteração 1](docs/evidencias/iteracao-1.md),
+[iteração 2](docs/evidencias/iteracao-2.md), [iteração 3](docs/evidencias/iteracao-3.md).
+
+---
+
+#### 3. Tracing detalhado de pelo menos 3 exemplos
+
+Visão geral dos traces no projeto — cada exemplo do dataset gera um trace
+`RunnableSequence` (geração da User Story) e três traces `ChatGoogleGenerativeAI` (os
+juízes de F1, Clarity e Precision), totalizando mais de 350 traces nas 4 execuções:
+
+![Aba Tracing do projeto mba-evaluation-prompt, listando os traces de RunnableSequence (geracao da User Story) e ChatGoogleGenerativeAI (os tres juizes) das rodadas de avaliacao](docs/evidencias/img/trace-all.png)
+
+Abaixo, três traces abertos individualmente, cobrindo as três faixas de complexidade do
+dataset.
+
+**3.1 — Bug simples**
+
+Trace bug simples: Botão de adicionar ao carrinho não funciona no produto ID 1234.
+![Trace detalhado de um bug simples, com o prompt de entrada e a User Story gerada](docs/evidencias/img/trace-simples.png)
+
+**3.2 — Bug médio**
+
+Trace bug médio: Pipeline de vendas calcula valor total errado quando há desconto.
+![Trace detalhado de um bug medio, com o prompt de entrada e a User Story gerada incluindo Contexto Tecnico](docs/evidencias/img/trace-medio.png)
+
+**3.3 — Bug complexo**
+
+Trace bug complexo: App de produtividade offline-first com bugs críticos de sincronização.
+![Trace detalhado de um bug complexo, com a User Story gerada em sub-itens A/B/C, Criterios Tecnicos e Tasks Tecnicas Sugeridas](docs/evidencias/img/trace-complexo.png)
+
+---
+
+> **Sobre a retenção:** o free tier do LangSmith retém traces por 14 dias (visível como
+> `Retention 14d` no print acima); prompts e datasets persistem indefinidamente. Por isso os
+> outputs brutos das três execuções estão versionados em `docs/evidencias/`, mantendo a
+> jornada auditável mesmo depois que os traces expirarem.
 
 ---
 
